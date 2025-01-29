@@ -475,7 +475,7 @@ class Search:
             msg.token = None
         
         if msg.token is not None:
-            events.emit(str(msg.token), msg.username, msg.list)
+            events.emit(str(msg.token), str(msg.token), str(msg.username), msg.list)
     
     def _file_search_request_server(self, msg):
         """Server code 26."""

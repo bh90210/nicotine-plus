@@ -13,6 +13,7 @@ import pynicotine.search as s
 # import pynicotine.navi_pb2 as navi__pb2
 import pynicotine.navi_pb2 as navi_pb2
 import pynicotine.navi_pb2_grpc as navi_pb2_grpc
+from pynicotine.slskmessages import increment_token
 
 # Coroutines to be invoked when the event loop is shutting down.
 _cleanup_coroutines = []
@@ -20,46 +21,76 @@ _cleanup_coroutines = []
 
 class Downloader(navi_pb2_grpc.DownloaderServicer):
     def __init__(self):
-        self.lists = {}
+        self.results = {}
+        self.lock = threading.Lock()
+        self.token = 0
+
+    def __callback__(self, search, username, filelist):
+        with self.lock:
+            if search not in self.results:
+                self.results[search] = {username: filelist}
+            else:
+                searchResultsSoFar = self.results[search]
+                if username not in searchResultsSoFar:
+                    self.results[search] = {username: filelist}
+                else:
+                    self.results[search][username].extend(filelist)
+
+            # self.results.setdefault(search, filelist)
 
     async def Search(
         self,
         request: navi_pb2.SearchRequest,
         context: grpc.aio.ServicerContext,
     ) -> navi_pb2.SearchReply:  # type: ignore
-        search = core.search.add_search(request.term, "global", "", "")
+        # Validate search term and run it through plugins
+        search_term, room, users = core.search.process_search_term(
+            request.term, "global"
+        )
 
-        results = {}
-        callback = lambda user, filelist: results.setdefault(user, filelist)
-        events.connect(str(search.token), callback)
+        # Get a new search token
+        self.token = increment_token(self.token)
+        search = core.search.add_search(search_term, "global", room, users)
 
-        items = config.sections["searches"]["history"]
+        events.connect(str(search.token), self.__callback__)
 
-        if search.term_sanitized in items:
-            items.remove(search.term_sanitized)
+        if config.sections["searches"]["enable_history"]:
+            items = config.sections["searches"]["history"]
 
-        items.insert(0, search.term_sanitized)
+            if search.term_sanitized in items:
+                items.remove(search.term_sanitized)
 
-        del items[200:]
-        config.write_configuration()
+            items.insert(0, search.term_sanitized)
+
+            # Clear old items
+            del items[200:]
+            config.write_configuration()
 
         core.search.do_global_search(search.term_transmitted)
 
-        lock = threading.Lock()
-        for i in range(60):
+        events.emit("add-search", search.token, search, False)
+
+        for i in range(30):
+            res = self.results.get(str(search.token))
+            if res is not None:
+                with self.lock:
+                    for userDictionary in res:
+                        for files in res[userDictionary]:
+                            yield navi_pb2.SearchReply(
+                                username=userDictionary, file=files[1]
+                            )
+
+                    self.results[str(search.token)][userDictionary].clear()
+
             time.sleep(1)
 
-            with lock:
-                for user in results:
-                    for file in results[user]:
-                        yield navi_pb2.SearchReply(username=user, file=file[1])
+        # Is this even needed? Check garbage collection in Python.
+        with self.lock:
+            del self.results[str(search.token)]
 
-                users = list(results.keys())
-                for user in users:
-                    del results[user]
+        core.search.remove_search(search.token)
 
-                    # for attr in dir(file):
-                    #    print("object: %s = %r" % (attr, getattr(file, attr)))
+        events.disconnect(str(search.token), self.__callback__)
 
     async def Download(
         self,

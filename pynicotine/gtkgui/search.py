@@ -275,7 +275,7 @@ class Searches(IconNotebook):
         elif mode == "buddies":
             mode_label = _("Buddies")
 
-        self.create_page(token, search.term_sanitized, mode, mode_label, room=room, users=users)
+        # self.create_page(token, search.term_sanitized, mode, mode_label, room=room, users=users)
 
         if switch_page:
             self.show_search(token)
@@ -351,19 +351,19 @@ class Searches(IconNotebook):
             if search_item is None:
                 return
 
-            search_term = search_item.term
-            mode = "global"
-            mode_label = _("Global")
-            page = self.create_page(msg.token, search_term, mode, mode_label, show_page=False)
+            # search_term = search_item.term
+            # mode = "wishlist"
+            # mode_label = _("Wish")
+            # page = self.create_page(msg.token, search_term, mode, mode_label, show_page=False)
 
         # No more things to add because we've reached the result limit
-        if page.num_results_found >= page.max_limit:
-            core.search.remove_allowed_token(msg.token)
-            page.max_limited = True
-            page.update_result_counter()
-            return
+        # if page.num_results_found >= page.max_limit:
+        #     core.search.remove_allowed_token(msg.token)
+        #     page.max_limited = True
+        #     page.update_result_counter()
+        #     return
 
-        page.file_search_response(msg)
+        # page.file_search_response(msg)
 
     def update_wish_button(self, wish):
 
@@ -912,7 +912,7 @@ class Search:
             is_wish = (self.mode == "wishlist")
 
             if not self.show_page:
-                self.searches.create_page(self.token, self.text)
+                # self.searches.create_page(self.token, self.text)
                 self.show_page = True
 
             tab_changed = self.searches.request_tab_changed(self.container, is_important=is_wish)
