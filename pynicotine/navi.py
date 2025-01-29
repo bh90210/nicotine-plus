@@ -36,8 +36,6 @@ class Downloader(navi_pb2_grpc.DownloaderServicer):
                 else:
                     self.results[search][username].extend(filelist)
 
-            # self.results.setdefault(search, filelist)
-
     async def Search(
         self,
         request: navi_pb2.SearchRequest,
@@ -71,16 +69,14 @@ class Downloader(navi_pb2_grpc.DownloaderServicer):
         events.emit("add-search", search.token, search, False)
 
         for i in range(30):
-            res = self.results.get(str(search.token))
-            if res is not None:
+            results = self.results.get(str(search.token))
+            if results is not None:
                 with self.lock:
-                    for userDictionary in res:
-                        for files in res[userDictionary]:
-                            yield navi_pb2.SearchReply(
-                                username=userDictionary, file=files[1]
-                            )
+                    for user in results:
+                        for file in results[user]:
+                            yield navi_pb2.SearchReply(username=user, file=file[1])
 
-                    self.results[str(search.token)][userDictionary].clear()
+                    self.results[str(search.token)][user].clear()
 
             time.sleep(1)
 
@@ -91,6 +87,8 @@ class Downloader(navi_pb2_grpc.DownloaderServicer):
         core.search.remove_search(search.token)
 
         events.disconnect(str(search.token), self.__callback__)
+
+        context.done()
 
     async def Download(
         self,
