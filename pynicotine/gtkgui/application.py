@@ -46,8 +46,16 @@ LIBADWAITA_API_VERSION = 0
 if GTK_API_VERSION >= 4:
     try:
         if "NICOTINE_LIBADWAITA" not in os.environ:
+            # Only attempt to use libadwaita in a standard GNOME session or Ubuntu's
+            # GNOME session (identified as 'GNOME' and 'ubuntu:GNOME'). Filter out
+            # other desktop environments that specify GNOME as a fallback, such as
+            # Budgie (identified as 'Budgie:GNOME').
+            current_desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+
             os.environ["NICOTINE_LIBADWAITA"] = str(int(
-                sys.platform in {"win32", "darwin"} or "gnome" in os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+                sys.platform in {"win32", "darwin"}
+                or current_desktop == "gnome"
+                or ("ubuntu" in current_desktop and "gnome" in current_desktop)
             ))
 
         if os.environ.get("NICOTINE_LIBADWAITA") == "1":
@@ -885,7 +893,7 @@ class Application:
         from traceback import format_tb
 
         # Check if exception occurred in a plugin
-        if core.pluginhandler is not None:
+        if exc_traceback is not None and core.pluginhandler is not None:
             traceback = exc_traceback
 
             while traceback.tb_next:

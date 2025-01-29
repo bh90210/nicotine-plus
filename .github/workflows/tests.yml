@@ -69,13 +69,14 @@ jobs:
         run: autopkgtest . -- null
 
   fedora:
-    runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         container: ['fedora:rawhide']
         gtk: [3, 4]
+        platform: ['ubuntu-latest', 'ubuntu-24.04-arm']
+    runs-on: ${{ matrix.platform }}
     container: ${{ matrix.container }}
     steps:
       - name: Checkout code
