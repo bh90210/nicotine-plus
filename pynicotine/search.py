@@ -22,6 +22,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from itertools import islice
+import json
+import logging
 from operator import itemgetter
 from shlex import shlex
 
@@ -461,7 +463,7 @@ class Search:
         if search is None or search.is_ignored:
             msg.token = None
             return
-
+        
         username = msg.username
         ip_address, _port = msg.addr
 
@@ -471,7 +473,10 @@ class Search:
 
         if core.network_filter.is_user_ip_ignored(username, ip_address):
             msg.token = None
-
+        
+        if msg.token is not None:
+            events.emit(str(msg.token), msg.username, msg.list)
+    
     def _file_search_request_server(self, msg):
         """Server code 26."""
 

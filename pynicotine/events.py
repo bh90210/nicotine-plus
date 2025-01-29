@@ -259,8 +259,9 @@ class Events:
 
     def connect(self, event_name, function):
 
-        if event_name not in EVENT_NAMES:
-            raise ValueError(f"Unknown event {event_name}")
+        # TODO: make a prefix `token-` check to catch the grpc event and reenable the check.
+        # if event_name not in EVENT_NAMES:
+        #     raise ValueError(f"Unknown event {event_name}")
 
         self._callbacks[event_name].append(function)
 

@@ -17,7 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import signal
 import sys
+import threading
+import logging
+
 
 def load_module():
 
@@ -25,15 +29,33 @@ def load_module():
         import pynicotine
 
     except ImportError:
-        print("""Cannot find the pynicotine module.
+        print(
+            """Cannot find the pynicotine module.
 Perhaps it is installed in a folder which is not in Python's module search
 path. There could be a version mismatch between the Python version that was
 used to build the application binary package and the version you try to run
-the application with.""")
+the application with."""
+        )
         return 1
 
     return pynicotine.run()
 
 
+def navi_grpc():
+
+    try:
+        import pynicotine.navi as navi
+
+    except ImportError:
+        print("""Cannot find the navi module.""")
+        return 1
+
+    return navi.nico()
+
+
 if __name__ == "__main__":
-    sys.exit(load_module())
+    logging.basicConfig(level=logging.INFO)
+    t2 = threading.Thread(target=navi_grpc)
+    t2.start()
+    t1 = threading.Thread(target=sys.exit(load_module()))
+    t1.start()

@@ -32,6 +32,7 @@ from pynicotine.config import config
 from pynicotine.core import core
 from pynicotine.events import events
 from pynicotine.logfacility import log
+from pynicotine.navi import serve
 from pynicotine.shares import PermissionLevel
 from pynicotine.slskmessages import UserStatus
 from pynicotine.utils import open_uri

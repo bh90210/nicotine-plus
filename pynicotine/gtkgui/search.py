@@ -352,8 +352,8 @@ class Searches(IconNotebook):
                 return
 
             search_term = search_item.term
-            mode = "wishlist"
-            mode_label = _("Wish")
+            mode = "global"
+            mode_label = _("Global")
             page = self.create_page(msg.token, search_term, mode, mode_label, show_page=False)
 
         # No more things to add because we've reached the result limit
