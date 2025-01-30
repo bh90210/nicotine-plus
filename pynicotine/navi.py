@@ -4,22 +4,24 @@ import grpc
 import threading
 import asyncio
 import logging
+from typing import Iterable
 
 from pynicotine import config, core
 from pynicotine.events import events
 import pynicotine.search as s
+from google.ads.googleads import util
 
-# correct generated files import (pynicotine/navi_pb2_grpc.py):
-# import pynicotine.navi_pb2 as navi__pb2
-import pynicotine.navi_pb2 as navi_pb2
-import pynicotine.navi_pb2_grpc as navi_pb2_grpc
+# correct generated files import (pynicotine/nicotine_pb2_grpc.py):
+# import pynicotine.nicotine_pb2 as nicotine__pb2
+import pynicotine.nicotine_pb2 as nicotine_pb2
+import pynicotine.nicotine_pb2_grpc as nicotine_pb2_grpc
 from pynicotine.slskmessages import increment_token
 
 # Coroutines to be invoked when the event loop is shutting down.
 _cleanup_coroutines = []
 
 
-class Downloader(navi_pb2_grpc.DownloaderServicer):
+class Downloader(nicotine_pb2_grpc.DownloaderServicer):
     def __init__(self):
         self.results = {}
         self.lock = threading.Lock()
@@ -38,15 +40,13 @@ class Downloader(navi_pb2_grpc.DownloaderServicer):
 
     async def Search(
         self,
-        request: navi_pb2.SearchRequest,
+        request: nicotine_pb2.SearchRequest,
         context: grpc.aio.ServicerContext,
-    ) -> navi_pb2.SearchReply:  # type: ignore
-        # Validate search term and run it through plugins
+    ) -> Iterable[nicotine_pb2.SearchResponse]:  # type: ignore
         search_term, room, users = core.search.process_search_term(
             request.term, "global"
         )
 
-        # Get a new search token
         self.token = increment_token(self.token)
         search = core.search.add_search(search_term, "global", room, users)
 
@@ -60,7 +60,6 @@ class Downloader(navi_pb2_grpc.DownloaderServicer):
 
             items.insert(0, search.term_sanitized)
 
-            # Clear old items
             del items[200:]
             config.write_configuration()
 
@@ -68,14 +67,17 @@ class Downloader(navi_pb2_grpc.DownloaderServicer):
 
         events.emit("add-search", search.token, search, False)
 
+        # Wait for 30 seconds for search results to collect.
         for i in range(30):
-            results = self.results.get(str(search.token))
-            if results is not None:
-                with self.lock:
+            with self.lock:
+                results = self.results.get(str(search.token))
+                if results is not None:
                     for user in results:
                         for file in results[user]:
-                            yield navi_pb2.SearchReply(username=user, file=file[1])
-
+                            f = nicotine_pb2.File(username=user, filepath=file[1])
+                            yield nicotine_pb2.SearchResponse(response=f)
+                            
+                    # Remove already sent results from the dictionary.
                     self.results[str(search.token)][user].clear()
 
             time.sleep(1)
@@ -88,21 +90,40 @@ class Downloader(navi_pb2_grpc.DownloaderServicer):
 
         events.disconnect(str(search.token), self.__callback__)
 
-        context.done()
-
     async def Download(
         self,
-        request: navi_pb2.DownloadRequest,
+        request_iterator: Iterable[nicotine_pb2.DownloadRequest],
         context: grpc.aio.ServicerContext,
-    ) -> navi_pb2.DownloadReply:
-        core.downloads.enqueue_download(request.username, request.file)
+    ) -> Iterable[nicotine_pb2.DownloadResponse]:  # type: ignore
+        try:
+            request = next(request_iterator)
+            print(request)
+            # core.downloads.enqueue_download(request.username, request.file)
 
-        return navi_pb2.DownloadReply(result=0)
+            # transfer = core.downloads.transfers.get(request.username + request.file)
+            # if transfer is not None:
+            #     while not transfer.status != "finished":
+            #         if transfer.status == "error":
+            #             yield nicotine_pb2.DownloadReply(status="error")
+            #             break
+
+            #         yield nicotine_pb2.DownloadReply(status=transfer.status)
+            #         await asyncio.sleep(1)
+
+            #         transfer = core.downloads.transfers.get(
+            #             request.username + request.file
+            #         )
+
+        except StopIteration:
+            print("StopIteration")
+            return
+
+        print("returning")
 
 
 async def serve() -> None:
     server = grpc.aio.server()
-    navi_pb2_grpc.add_DownloaderServicer_to_server(Downloader(), server)
+    nicotine_pb2_grpc.add_DownloaderServicer_to_server(Downloader(), server)
     listen_addr = "[::]:50051"
     server.add_insecure_port(listen_addr)
     logging.info("Starting server on %s", listen_addr)

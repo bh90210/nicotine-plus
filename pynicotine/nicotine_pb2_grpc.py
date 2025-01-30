@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import pynicotine.navi_pb2 as navi__pb2
+import pynicotine.nicotine_pb2 as nicotine__pb2
 
 GRPC_GENERATED_VERSION = '1.68.1'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in navi_pb2_grpc.py depends on'
+        + f' but the generated code in nicotine_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -35,14 +35,14 @@ class DownloaderStub(object):
             channel: A grpc.Channel.
         """
         self.Search = channel.unary_stream(
-                '/navi.Downloader/Search',
-                request_serializer=navi__pb2.SearchRequest.SerializeToString,
-                response_deserializer=navi__pb2.SearchReply.FromString,
+                '/extras.Downloader/Search',
+                request_serializer=nicotine__pb2.SearchRequest.SerializeToString,
+                response_deserializer=nicotine__pb2.SearchResponse.FromString,
                 _registered_method=True)
-        self.Download = channel.unary_unary(
-                '/navi.Downloader/Download',
-                request_serializer=navi__pb2.DownloadRequest.SerializeToString,
-                response_deserializer=navi__pb2.DownloadReply.FromString,
+        self.Download = channel.unary_stream(
+                '/extras.Downloader/Download',
+                request_serializer=nicotine__pb2.DownloadRequest.SerializeToString,
+                response_deserializer=nicotine__pb2.DownloadResponse.FromString,
                 _registered_method=True)
 
 
@@ -66,19 +66,19 @@ def add_DownloaderServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Search': grpc.unary_stream_rpc_method_handler(
                     servicer.Search,
-                    request_deserializer=navi__pb2.SearchRequest.FromString,
-                    response_serializer=navi__pb2.SearchReply.SerializeToString,
+                    request_deserializer=nicotine__pb2.SearchRequest.FromString,
+                    response_serializer=nicotine__pb2.SearchResponse.SerializeToString,
             ),
-            'Download': grpc.unary_unary_rpc_method_handler(
+            'Download': grpc.unary_stream_rpc_method_handler(
                     servicer.Download,
-                    request_deserializer=navi__pb2.DownloadRequest.FromString,
-                    response_serializer=navi__pb2.DownloadReply.SerializeToString,
+                    request_deserializer=nicotine__pb2.DownloadRequest.FromString,
+                    response_serializer=nicotine__pb2.DownloadResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'navi.Downloader', rpc_method_handlers)
+            'extras.Downloader', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('navi.Downloader', rpc_method_handlers)
+    server.add_registered_method_handlers('extras.Downloader', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
@@ -99,9 +99,9 @@ class Downloader(object):
         return grpc.experimental.unary_stream(
             request,
             target,
-            '/navi.Downloader/Search',
-            navi__pb2.SearchRequest.SerializeToString,
-            navi__pb2.SearchReply.FromString,
+            '/extras.Downloader/Search',
+            nicotine__pb2.SearchRequest.SerializeToString,
+            nicotine__pb2.SearchResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -123,12 +123,12 @@ class Downloader(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(
+        return grpc.experimental.unary_stream(
             request,
             target,
-            '/navi.Downloader/Download',
-            navi__pb2.DownloadRequest.SerializeToString,
-            navi__pb2.DownloadReply.FromString,
+            '/extras.Downloader/Download',
+            nicotine__pb2.DownloadRequest.SerializeToString,
+            nicotine__pb2.DownloadResponse.FromString,
             options,
             channel_credentials,
             insecure,
