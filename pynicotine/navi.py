@@ -124,6 +124,9 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                             status=nicotine_pb2.DownloadStatus.Status.QUEUED
                         )
                     )
+                    
+                    time.sleep(4)
+                    
                     core.downloads.retry_download(transfer)
                     transfer = core.downloads.transfers.get(
                         request.request.username + request.request.filepath
