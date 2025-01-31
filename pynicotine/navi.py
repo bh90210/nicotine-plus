@@ -96,10 +96,10 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
         request: nicotine_pb2.DownloadRequest,
         context: grpc.aio.ServicerContext,
     ) -> Iterable[nicotine_pb2.DownloadResponse]:  # type: ignore
-
-        # core.downloads.enqueue_download(
-        #     request.request.username, request.request.filepath
-        # )
+        # Start the download.
+        core.downloads.enqueue_download(
+            request.request.username, request.request.filepath
+        )
 
         transfer = core.downloads.transfers.get(
             request.request.username + request.request.filepath
