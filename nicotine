@@ -56,6 +56,7 @@ def navi_grpc():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     t2 = threading.Thread(target=navi_grpc)
+    t2.daemon = True 
     t2.start()
     t1 = threading.Thread(target=sys.exit(load_module()))
     t1.start()

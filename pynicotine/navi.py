@@ -15,7 +15,8 @@ from google.ads.googleads import util
 # import pynicotine.nicotine_pb2 as nicotine__pb2
 import pynicotine.nicotine_pb2 as nicotine_pb2
 import pynicotine.nicotine_pb2_grpc as nicotine_pb2_grpc
-from pynicotine.slskmessages import increment_token
+from pynicotine.slskmessages import TransferRejectReason, increment_token
+from pynicotine.transfers import TransferStatus
 
 # Coroutines to be invoked when the event loop is shutting down.
 _cleanup_coroutines = []
@@ -76,7 +77,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                         for file in results[user]:
                             f = nicotine_pb2.File(username=user, filepath=file[1])
                             yield nicotine_pb2.SearchResponse(response=f)
-                            
+
                     # Remove already sent results from the dictionary.
                     self.results[str(search.token)][user].clear()
 
@@ -92,33 +93,68 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
     async def Download(
         self,
-        request_iterator: Iterable[nicotine_pb2.DownloadRequest],
+        request: nicotine_pb2.DownloadRequest,
         context: grpc.aio.ServicerContext,
     ) -> Iterable[nicotine_pb2.DownloadResponse]:  # type: ignore
-        try:
-            request = next(request_iterator)
-            print(request)
-            # core.downloads.enqueue_download(request.username, request.file)
 
-            # transfer = core.downloads.transfers.get(request.username + request.file)
-            # if transfer is not None:
-            #     while not transfer.status != "finished":
-            #         if transfer.status == "error":
-            #             yield nicotine_pb2.DownloadReply(status="error")
-            #             break
+        # core.downloads.enqueue_download(
+        #     request.request.username, request.request.filepath
+        # )
 
-            #         yield nicotine_pb2.DownloadReply(status=transfer.status)
-            #         await asyncio.sleep(1)
+        transfer = core.downloads.transfers.get(
+            request.request.username + request.request.filepath
+        )
 
-            #         transfer = core.downloads.transfers.get(
-            #             request.username + request.file
-            #         )
+        for i in range(999999999999999):
+            exitFor = False
+            match transfer.status:
+                case (
+                    TransferStatus.QUEUED | TransferStatus.PAUSED,
+                    TransferStatus.USER_LOGGED_OFF
+                    | TransferStatus.GETTING_STATUS
+                    | TransferStatus.CONNECTION_CLOSED
+                    | TransferStatus.CONNECTION_TIMEOUT,
+                ):
+                    yield nicotine_pb2.DownloadResponse(
+                        status=nicotine_pb2.DownloadStatus(
+                            status=nicotine_pb2.DownloadStatus.Status.QUEUED
+                        )
+                    )
+                case TransferStatus.TRANSFERRING:
+                    yield nicotine_pb2.DownloadResponse(
+                        status=nicotine_pb2.DownloadStatus(
+                            status=nicotine_pb2.DownloadStatus.Status.DOWNLOADING
+                        )
+                    )
+                case TransferStatus.FINISHED:
+                    yield nicotine_pb2.DownloadResponse(
+                        status=nicotine_pb2.DownloadStatus(
+                            status=nicotine_pb2.DownloadStatus.Status.COMPLETED
+                        )
+                    )
+                    exitFor = True
+                case (
+                    TransferRejectReason.CANCELLED
+                    | TransferRejectReason.FILE_READ_ERROR
+                    | TransferRejectReason.FILE_NOT_SHARED
+                    | TransferRejectReason.BANNED
+                    | TransferRejectReason.PENDING_SHUTDOWN
+                    | TransferRejectReason.TOO_MANY_FILES
+                    | TransferRejectReason.TOO_MANY_MEGABYTES
+                    | TransferRejectReason.DISALLOWED_EXTENSION
+                    | TransferStatus.DOWNLOAD_FOLDER_ERROR
+                ):
+                    yield nicotine_pb2.DownloadResponse(
+                        status=nicotine_pb2.DownloadStatus(
+                            status=nicotine_pb2.DownloadStatus.Status.CANCELLED
+                        )
+                    )
+                    exitFor = True
 
-        except StopIteration:
-            print("StopIteration")
-            return
+            if exitFor:
+                break
 
-        print("returning")
+            time.sleep(1)
 
 
 async def serve() -> None:

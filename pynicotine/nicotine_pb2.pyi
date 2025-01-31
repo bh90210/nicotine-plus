@@ -40,18 +40,22 @@ class DownloadResponse(_message.Message):
     def __init__(self, status: _Optional[_Union[DownloadStatus, _Mapping]] = ..., progress: _Optional[_Union[DownloadProgress, _Mapping]] = ...) -> None: ...
 
 class DownloadStatus(_message.Message):
-    __slots__ = ()
+    __slots__ = ("status",)
     class Status(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
         __slots__ = ()
+        UNKNOWN: _ClassVar[DownloadStatus.Status]
         QUEUED: _ClassVar[DownloadStatus.Status]
         DOWNLOADING: _ClassVar[DownloadStatus.Status]
         COMPLETED: _ClassVar[DownloadStatus.Status]
         CANCELLED: _ClassVar[DownloadStatus.Status]
+    UNKNOWN: DownloadStatus.Status
     QUEUED: DownloadStatus.Status
     DOWNLOADING: DownloadStatus.Status
     COMPLETED: DownloadStatus.Status
     CANCELLED: DownloadStatus.Status
-    def __init__(self) -> None: ...
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    status: DownloadStatus.Status
+    def __init__(self, status: _Optional[_Union[DownloadStatus.Status, str]] = ...) -> None: ...
 
 class DownloadProgress(_message.Message):
     __slots__ = ("progress",)
