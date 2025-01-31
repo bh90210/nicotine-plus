@@ -124,12 +124,16 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                             status=nicotine_pb2.DownloadStatus.Status.QUEUED
                         )
                     )
+                    
+                    core.downloads.retry_download(transfer)
+                    
                 case TransferStatus.TRANSFERRING:
                     yield nicotine_pb2.DownloadResponse(
                         status=nicotine_pb2.DownloadStatus(
                             status=nicotine_pb2.DownloadStatus.Status.DOWNLOADING
                         )
                     )
+                    
                 case TransferStatus.FINISHED:
                     yield nicotine_pb2.DownloadResponse(
                         status=nicotine_pb2.DownloadStatus(
@@ -137,6 +141,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                         )
                     )
                     exitFor = True
+                    
                 case (
                     TransferRejectReason.CANCELLED
                     | TransferRejectReason.FILE_READ_ERROR
