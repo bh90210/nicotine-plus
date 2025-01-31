@@ -1,7 +1,8 @@
+from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -12,24 +13,30 @@ class SearchRequest(_message.Message):
     def __init__(self, term: _Optional[str] = ...) -> None: ...
 
 class SearchResponse(_message.Message):
-    __slots__ = ("response",)
-    RESPONSE_FIELD_NUMBER: _ClassVar[int]
-    response: File
-    def __init__(self, response: _Optional[_Union[File, _Mapping]] = ...) -> None: ...
+    __slots__ = ("username", "user_files")
+    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    USER_FILES_FIELD_NUMBER: _ClassVar[int]
+    username: str
+    user_files: _containers.RepeatedCompositeFieldContainer[File]
+    def __init__(self, username: _Optional[str] = ..., user_files: _Optional[_Iterable[_Union[File, _Mapping]]] = ...) -> None: ...
 
 class DownloadRequest(_message.Message):
-    __slots__ = ("request",)
-    REQUEST_FIELD_NUMBER: _ClassVar[int]
-    request: File
-    def __init__(self, request: _Optional[_Union[File, _Mapping]] = ...) -> None: ...
+    __slots__ = ("username", "file")
+    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    FILE_FIELD_NUMBER: _ClassVar[int]
+    username: str
+    file: File
+    def __init__(self, username: _Optional[str] = ..., file: _Optional[_Union[File, _Mapping]] = ...) -> None: ...
 
 class File(_message.Message):
-    __slots__ = ("username", "filepath")
-    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("filepath", "size", "quality")
     FILEPATH_FIELD_NUMBER: _ClassVar[int]
-    username: str
+    SIZE_FIELD_NUMBER: _ClassVar[int]
+    QUALITY_FIELD_NUMBER: _ClassVar[int]
     filepath: str
-    def __init__(self, username: _Optional[str] = ..., filepath: _Optional[str] = ...) -> None: ...
+    size: str
+    quality: str
+    def __init__(self, filepath: _Optional[str] = ..., size: _Optional[str] = ..., quality: _Optional[str] = ...) -> None: ...
 
 class DownloadResponse(_message.Message):
     __slots__ = ("status", "progress")

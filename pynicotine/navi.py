@@ -73,13 +73,21 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
             with self.lock:
                 results = self.results.get(str(search.token))
                 if results is not None:
+                    users = []
                     for user in results:
+                        files = []
                         for file in results[user]:
-                            f = nicotine_pb2.File(username=user, filepath=file[1])
-                            yield nicotine_pb2.SearchResponse(response=f)
+                            files.append(
+                                nicotine_pb2.File(filepath=file[1], size=file[2])
+                            )
 
-                    # Remove already sent results from the dictionary.
-                    self.results[str(search.token)][user].clear()
+                        yield nicotine_pb2.SearchResponse(
+                            username=user, user_files=files
+                        )
+                        users.append(user)
+
+                    for user in users:
+                        self.results[str(search.token)].pop(user)
 
             time.sleep(1)
 
@@ -96,18 +104,14 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
         request: nicotine_pb2.DownloadRequest,
         context: grpc.aio.ServicerContext,
     ) -> Iterable[nicotine_pb2.DownloadResponse]:  # type: ignore
-        transfer = core.downloads.transfers.get(
-            request.request.username + request.request.filepath
-        )
+        # Check to see if a transfer already exists. This situation can occur
+        # due to a broken connection etc.
+        transfer = core.downloads.transfers.get(request.username + request.file)
 
         if transfer is not None:
-            core.downloads.enqueue_download(
-                request.request.username, request.request.filepath
-            )
+            core.downloads.enqueue_download(request.username, request.file)
 
-            transfer = core.downloads.transfers.get(
-                request.request.username + request.request.filepath
-            )
+            transfer = core.downloads.transfers.get(request.username + request.file)
 
         for i in range(999999999999999):
             exitFor = False
@@ -124,19 +128,20 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                             status=nicotine_pb2.DownloadStatus.Status.QUEUED
                         )
                     )
-                    
+
                     time.sleep(4)
-                    
+
                     core.downloads.retry_download(transfer)
-                    transfer = core.downloads.transfers.get(
-                        request.request.username + request.request.filepath
-                    )
-                    
+
                 case TransferStatus.TRANSFERRING:
                     yield nicotine_pb2.DownloadResponse(
                         status=nicotine_pb2.DownloadStatus(
                             status=nicotine_pb2.DownloadStatus.Status.DOWNLOADING
                         )
+                    )
+
+                    yield nicotine_pb2.DownloadResponse(
+                        progress=nicotine_pb2.DownloadProgress(progress=0)
                     )
 
                 case TransferStatus.FINISHED:
@@ -167,6 +172,8 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
             if exitFor:
                 break
+
+            transfer = core.downloads.transfers.get(request.username + request.file)
 
             time.sleep(1)
 

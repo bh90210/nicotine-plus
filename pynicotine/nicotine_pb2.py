@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0enicotine.proto\x12\x06\x65xtras\"\x1d\n\rSearchRequest\x12\x0c\n\x04term\x18\x01 \x01(\t\"0\n\x0eSearchResponse\x12\x1e\n\x08response\x18\x01 \x01(\x0b\x32\x0c.extras.File\"0\n\x0f\x44ownloadRequest\x12\x1d\n\x07request\x18\x01 \x01(\x0b\x32\x0c.extras.File\"*\n\x04\x46ile\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08\x66ilepath\x18\x02 \x01(\t\"v\n\x10\x44ownloadResponse\x12(\n\x06status\x18\x01 \x01(\x0b\x32\x16.extras.DownloadStatusH\x00\x12,\n\x08progress\x18\x02 \x01(\x0b\x32\x18.extras.DownloadProgressH\x00\x42\n\n\x08response\"\x91\x01\n\x0e\x44ownloadStatus\x12-\n\x06status\x18\x05 \x01(\x0e\x32\x1d.extras.DownloadStatus.Status\"P\n\x06Status\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06QUEUED\x10\x01\x12\x0f\n\x0b\x44OWNLOADING\x10\x02\x12\r\n\tCOMPLETED\x10\x03\x12\r\n\tCANCELLED\x10\x04\"$\n\x10\x44ownloadProgress\x12\x10\n\x08progress\x18\x01 \x01(\x05\x32\x8c\x01\n\nDownloader\x12;\n\x06Search\x12\x15.extras.SearchRequest\x1a\x16.extras.SearchResponse\"\x00\x30\x01\x12\x41\n\x08\x44ownload\x12\x17.extras.DownloadRequest\x1a\x18.extras.DownloadResponse\"\x00\x30\x01\x42+Z#github.com/bh90210/navidrome/extras\xa2\x02\x03HLWb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0enicotine.proto\x12\x06\x65xtras\"\x1d\n\rSearchRequest\x12\x0c\n\x04term\x18\x01 \x01(\t\"D\n\x0eSearchResponse\x12\x10\n\x08username\x18\x01 \x01(\t\x12 \n\nuser_files\x18\x02 \x03(\x0b\x32\x0c.extras.File\"?\n\x0f\x44ownloadRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x1a\n\x04\x66ile\x18\x02 \x01(\x0b\x32\x0c.extras.File\"7\n\x04\x46ile\x12\x10\n\x08\x66ilepath\x18\x01 \x01(\t\x12\x0c\n\x04size\x18\x02 \x01(\t\x12\x0f\n\x07quality\x18\x03 \x01(\t\"v\n\x10\x44ownloadResponse\x12(\n\x06status\x18\x01 \x01(\x0b\x32\x16.extras.DownloadStatusH\x00\x12,\n\x08progress\x18\x02 \x01(\x0b\x32\x18.extras.DownloadProgressH\x00\x42\n\n\x08response\"\x91\x01\n\x0e\x44ownloadStatus\x12-\n\x06status\x18\x05 \x01(\x0e\x32\x1d.extras.DownloadStatus.Status\"P\n\x06Status\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06QUEUED\x10\x01\x12\x0f\n\x0b\x44OWNLOADING\x10\x02\x12\r\n\tCOMPLETED\x10\x03\x12\r\n\tCANCELLED\x10\x04\"$\n\x10\x44ownloadProgress\x12\x10\n\x08progress\x18\x01 \x01(\x05\x32\x8c\x01\n\nDownloader\x12;\n\x06Search\x12\x15.extras.SearchRequest\x1a\x16.extras.SearchResponse\"\x00\x30\x01\x12\x41\n\x08\x44ownload\x12\x17.extras.DownloadRequest\x1a\x18.extras.DownloadResponse\"\x00\x30\x01\x42+Z#github.com/bh90210/navidrome/extras\xa2\x02\x03HLWb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,19 +35,19 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SEARCHREQUEST']._serialized_start=26
   _globals['_SEARCHREQUEST']._serialized_end=55
   _globals['_SEARCHRESPONSE']._serialized_start=57
-  _globals['_SEARCHRESPONSE']._serialized_end=105
-  _globals['_DOWNLOADREQUEST']._serialized_start=107
-  _globals['_DOWNLOADREQUEST']._serialized_end=155
-  _globals['_FILE']._serialized_start=157
-  _globals['_FILE']._serialized_end=199
-  _globals['_DOWNLOADRESPONSE']._serialized_start=201
-  _globals['_DOWNLOADRESPONSE']._serialized_end=319
-  _globals['_DOWNLOADSTATUS']._serialized_start=322
-  _globals['_DOWNLOADSTATUS']._serialized_end=467
-  _globals['_DOWNLOADSTATUS_STATUS']._serialized_start=387
-  _globals['_DOWNLOADSTATUS_STATUS']._serialized_end=467
-  _globals['_DOWNLOADPROGRESS']._serialized_start=469
-  _globals['_DOWNLOADPROGRESS']._serialized_end=505
-  _globals['_DOWNLOADER']._serialized_start=508
-  _globals['_DOWNLOADER']._serialized_end=648
+  _globals['_SEARCHRESPONSE']._serialized_end=125
+  _globals['_DOWNLOADREQUEST']._serialized_start=127
+  _globals['_DOWNLOADREQUEST']._serialized_end=190
+  _globals['_FILE']._serialized_start=192
+  _globals['_FILE']._serialized_end=247
+  _globals['_DOWNLOADRESPONSE']._serialized_start=249
+  _globals['_DOWNLOADRESPONSE']._serialized_end=367
+  _globals['_DOWNLOADSTATUS']._serialized_start=370
+  _globals['_DOWNLOADSTATUS']._serialized_end=515
+  _globals['_DOWNLOADSTATUS_STATUS']._serialized_start=435
+  _globals['_DOWNLOADSTATUS_STATUS']._serialized_end=515
+  _globals['_DOWNLOADPROGRESS']._serialized_start=517
+  _globals['_DOWNLOADPROGRESS']._serialized_end=553
+  _globals['_DOWNLOADER']._serialized_start=556
+  _globals['_DOWNLOADER']._serialized_end=696
 # @@protoc_insertion_point(module_scope)
