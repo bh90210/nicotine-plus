@@ -50,7 +50,7 @@ def navi_grpc():
         print("""Cannot find the navi module.""")
         return 1
 
-    return navi.nico()
+    return navi.serve()
 
 
 if __name__ == "__main__":

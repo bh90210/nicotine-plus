@@ -18,10 +18,6 @@ import pynicotine.nicotine_pb2_grpc as nicotine_pb2_grpc
 from pynicotine.slskmessages import TransferRejectReason, increment_token
 from pynicotine.transfers import TransferStatus
 
-# Coroutines to be invoked when the event loop is shutting down.
-_cleanup_coroutines = []
-
-
 class Downloader(nicotine_pb2_grpc.DownloaderServicer):
     def __init__(self):
         self.results = {}
@@ -171,30 +167,11 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
             time.sleep(1)
 
 
-async def serve() -> None:
-    server = grpc.aio.server()
+def serve() -> None:
+    port = "50051"
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     nicotine_pb2_grpc.add_DownloaderServicer_to_server(Downloader(), server)
-    listen_addr = "[::]:50051"
-    server.add_insecure_port(listen_addr)
-    logging.info("Starting server on %s", listen_addr)
-    await server.start()
-
-    async def server_graceful_shutdown():
-        logging.info("Starting graceful shutdown...")
-        # Shuts down the server with 5 seconds of grace period. During the
-        # grace period, the server won't accept new connections and allow
-        # existing RPCs to continue within the grace period.
-        await server.stop(5)
-
-    _cleanup_coroutines.append(server_graceful_shutdown())
-    await server.wait_for_termination()
-
-
-def nico():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(serve())
-    finally:
-        loop.run_until_complete(*_cleanup_coroutines)
-        loop.close()
+    server.add_insecure_port("[::]:" + port)
+    server.start()
+    print("Server started, listening on " + port)
+    server.wait_for_termination()
