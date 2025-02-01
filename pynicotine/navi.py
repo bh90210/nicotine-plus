@@ -126,7 +126,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
             core.downloads._abort_transfer(
                 transfer, TransferRejectReason.CANCELLED, update_parent=True
             )
-            
+
             events.emit("abort-downloads", transfer, TransferRejectReason.CANCELLED)
 
             yield nicotine_pb2.DownloadResponse(
@@ -147,11 +147,12 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
             match transfer.status:
                 case (
-                    TransferStatus.QUEUED | TransferStatus.PAUSED,
-                    TransferStatus.USER_LOGGED_OFF
+                    TransferStatus.QUEUED
+                    | TransferStatus.PAUSED
+                    | TransferStatus.USER_LOGGED_OFF
                     | TransferStatus.GETTING_STATUS
                     | TransferStatus.CONNECTION_CLOSED
-                    | TransferStatus.CONNECTION_TIMEOUT,
+                    | TransferStatus.CONNECTION_TIMEOUT
                 ):
                     yield nicotine_pb2.DownloadResponse(
                         status=nicotine_pb2.DownloadStatus(
@@ -177,7 +178,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                     yield nicotine_pb2.DownloadResponse(
                         progress=nicotine_pb2.DownloadProgress(
                             progress=get_percent(
-                                transfer.current_byte_offset, request.file.size
+                                transfer.current_byte_offset, transfer.size
                             )
                         )
                     )
