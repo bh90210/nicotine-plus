@@ -17,19 +17,7 @@ import pynicotine.nicotine_pb2 as nicotine_pb2
 import pynicotine.nicotine_pb2_grpc as nicotine_pb2_grpc
 from pynicotine.slskmessages import TransferRejectReason, increment_token
 
-
-def get_percent(current_byte_offset, size):
-    if current_byte_offset > size or size <= 0:
-        return 100
-
-    # Multiply first to avoid decimals
-    return (100 * current_byte_offset) // size
-
-
 from pynicotine.transfers import TransferStatus
-
-# Coroutines to be invoked when the event loop is shutting down.
-_cleanup_coroutines = []
 
 
 class Downloader(nicotine_pb2_grpc.DownloaderServicer):
@@ -49,7 +37,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                 else:
                     self.results[search][username].extend(filelist)
 
-    async def Search(
+    def Search(
         self,
         request: nicotine_pb2.SearchRequest,
         context: grpc.aio.ServicerContext,
@@ -111,7 +99,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
         events.disconnect(str(search.token), self.__callback__)
 
-    async def Download(
+    def Download(
         self,
         request: nicotine_pb2.DownloadRequest,
         context: grpc.aio.ServicerContext,
@@ -162,7 +150,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
                     transferring = False
 
-                    await asyncio.sleep(4)
+                    time.sleep(4)
 
                     core.downloads.retry_download(transfer)
 
@@ -177,7 +165,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
                     yield nicotine_pb2.DownloadResponse(
                         progress=nicotine_pb2.DownloadProgress(
-                            progress=get_percent(
+                            progress=self._get_percent(
                                 transfer.current_byte_offset, transfer.size
                             )
                         )
@@ -211,33 +199,21 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
                     break
 
-            await asyncio.sleep(1)
+            time.sleep(1)
+
+    def _get_percent(self, current_byte_offset, size):
+        if current_byte_offset > size or size <= 0:
+            return 100
+
+        # Multiply first to avoid decimals
+        return (100 * current_byte_offset) // size
 
 
-async def serve() -> None:
-    server = grpc.aio.server(futures.ThreadPoolExecutor())
+def serve() -> None:
+    server = grpc.server(futures.ThreadPoolExecutor())
     nicotine_pb2_grpc.add_DownloaderServicer_to_server(Downloader(), server)
     listen_addr = "[::]:50051"
     server.add_insecure_port(listen_addr)
+    server.start()
     logging.info("Starting server on %s", listen_addr)
-    await server.start()
-
-    async def server_graceful_shutdown():
-        logging.info("Starting graceful shutdown...")
-        # Shuts down the server with 5 seconds of grace period. During the
-        # grace period, the server won't accept new connections and allow
-        # existing RPCs to continue within the grace period.
-        await server.stop()
-
-    _cleanup_coroutines.append(server_graceful_shutdown())
-    await server.wait_for_termination()
-
-
-def nico():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(serve())
-    finally:
-        loop.run_until_complete(*_cleanup_coroutines)
-        loop.close()
+    server.wait_for_termination()
