@@ -34,9 +34,9 @@ class File(_message.Message):
     SIZE_FIELD_NUMBER: _ClassVar[int]
     QUALITY_FIELD_NUMBER: _ClassVar[int]
     filepath: str
-    size: str
+    size: int
     quality: str
-    def __init__(self, filepath: _Optional[str] = ..., size: _Optional[str] = ..., quality: _Optional[str] = ...) -> None: ...
+    def __init__(self, filepath: _Optional[str] = ..., size: _Optional[int] = ..., quality: _Optional[str] = ...) -> None: ...
 
 class DownloadResponse(_message.Message):
     __slots__ = ("status", "progress")
