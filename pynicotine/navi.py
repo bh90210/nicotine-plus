@@ -78,13 +78,13 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
 		events.emit("add-search", search.token, search, False)
 
-		deleteFromDictionary = False
-		# Wait for 30 seconds for search results to collect.
-		for i in range(60):
+		deleteSearchTermFromDictionary = False
+		# Wait for 120 seconds for search results to collect.
+		for i in range(120):
 			with self.lock:
 				results = self.results.get(str(search.token))
 				if results is not None:
-					deleteFromDictionary = True
+					deleteSearchTermFromDictionary = True
 					users = []
 					for user in results:
 						files = []
@@ -103,7 +103,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
 			time.sleep(1)
 
-		if deleteFromDictionary:
+		if deleteSearchTermFromDictionary:
 			with self.lock:
 				del self.results[str(search.token)]
 
