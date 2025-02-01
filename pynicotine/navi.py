@@ -124,7 +124,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
         if request.file.quality == "-1":
             core.downloads._abort_transfer(
-                transfer, TransferRejectReason.CANCELLED, update_parent=True
+                transfer, TransferRejectReason.CANCELLED, update_parent=False
             )
 
             events.emit("abort-downloads", transfer, TransferRejectReason.CANCELLED)
@@ -215,7 +215,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
 
 async def serve() -> None:
-    server = grpc.aio.server()
+    server = grpc.aio.server(futures.ThreadPoolExecutor())
     nicotine_pb2_grpc.add_DownloaderServicer_to_server(Downloader(), server)
     listen_addr = "[::]:50051"
     server.add_insecure_port(listen_addr)
