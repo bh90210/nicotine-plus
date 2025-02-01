@@ -22,20 +22,20 @@ from pynicotine.transfers import TransferStatus
 
 class Downloader(nicotine_pb2_grpc.DownloaderServicer):
     def __init__(self):
-        self.results = {}
-        self.lock = threading.Lock()
-        self.token = 0
+        self._results = {}
+        self._lock = threading.Lock()
+        self._token = 0
 
     def __callback__(self, search, username, filelist):
-        with self.lock:
-            if search not in self.results:
-                self.results[search] = {username: filelist}
+        with self._lock:
+            if search not in self._results:
+                self._results[search] = {username: filelist}
             else:
-                searchResultsSoFar = self.results[search]
+                searchResultsSoFar = self._results[search]
                 if username not in searchResultsSoFar:
-                    self.results[search] = {username: filelist}
+                    self._results[search] = {username: filelist}
                 else:
-                    self.results[search][username].extend(filelist)
+                    self._results[search][username].extend(filelist)
 
     def Search(
         self,
@@ -46,7 +46,7 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
             request.term, "global"
         )
 
-        self.token = increment_token(self.token)
+        self._token = increment_token(self._token)
         search = core.search.add_search(search_term, "global", room, users)
 
         events.connect(str(search.token), self.__callback__)
@@ -69,8 +69,8 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
         deleteSearchTermFromDictionary = False
         # Wait for 120 seconds for search results to collect.
         for i in range(120):
-            with self.lock:
-                results = self.results.get(str(search.token))
+            with self._lock:
+                results = self._results.get(str(search.token))
                 if results is not None:
                     deleteSearchTermFromDictionary = True
                     users = []
@@ -87,13 +87,13 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
                         users.append(user)
 
                     for user in users:
-                        self.results[str(search.token)].pop(user)
+                        self._results[str(search.token)].pop(user)
 
             time.sleep(1)
 
         if deleteSearchTermFromDictionary:
-            with self.lock:
-                del self.results[str(search.token)]
+            with self._lock:
+                del self._results[str(search.token)]
 
         core.search.remove_search(search.token)
 
