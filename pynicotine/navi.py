@@ -124,8 +124,10 @@ class Downloader(nicotine_pb2_grpc.DownloaderServicer):
 
         if request.file.quality == "-1":
             core.downloads._abort_transfer(
-                transfer, transfer.status, update_parent=False
+                transfer, TransferRejectReason.CANCELLED, update_parent=True
             )
+            
+            events.emit("abort-downloads", transfer, TransferRejectReason.CANCELLED)
 
             yield nicotine_pb2.DownloadResponse(
                 status=nicotine_pb2.DownloadStatus(
