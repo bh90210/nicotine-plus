@@ -1,4 +1,4 @@
-# COPYRIGHT (C) 2021-2024 Nicotine+ Contributors
+# COPYRIGHT (C) 2021-2025 Nicotine+ Contributors
 #
 # GNU GENERAL PUBLIC LICENSE
 #    Version 3, 29 June 2007
@@ -51,14 +51,7 @@ class UploadsTest(TestCase):
         core.start()
 
     def tearDown(self):
-
         core.quit()
-
-        self.assertIsNone(core.users)
-        self.assertIsNone(core.shares)
-        self.assertIsNone(core.uploads)
-        self.assertIsNone(core.userbrowse)
-        self.assertIsNone(core.buddies)
 
     @classmethod
     def tearDownClass(cls):

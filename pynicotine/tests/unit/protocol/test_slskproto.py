@@ -1,4 +1,4 @@
-# COPYRIGHT (C) 2020-2024 Nicotine+ Contributors
+# COPYRIGHT (C) 2020-2025 Nicotine+ Contributors
 # COPYRIGHT (C) 2020 Lene Preuss <lene.preuss@gmail.com>
 #
 # GNU GENERAL PUBLIC LICENSE
@@ -100,8 +100,6 @@ class SoulseekNetworkTest(TestCase):
         sleep(SLSKPROTO_RUN_TIME / 2)
 
         events.process_thread_events()
-        self.assertIsNone(core.portmapper)
-        self.assertIsNone(core._network_thread)  # pylint: disable=protected-access
 
     @classmethod
     def tearDownClass(cls):

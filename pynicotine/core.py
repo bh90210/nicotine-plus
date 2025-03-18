@@ -1,4 +1,4 @@
-# COPYRIGHT (C) 2020-2024 Nicotine+ Contributors
+# COPYRIGHT (C) 2020-2025 Nicotine+ Contributors
 #
 # GNU GENERAL PUBLIC LICENSE
 #    Version 3, 29 June 2007
@@ -253,27 +253,6 @@ class Core:
         events.emit("quit")
 
     def _quit(self):
-
-        self._network_thread = None
-        self.shares = None
-        self.users = None
-        self.portmapper = None
-        self.notifications = None
-        self.network_filter = None
-        self.now_playing = None
-        self.statistics = None
-        self.update_checker = None
-
-        self.search = None
-        self.downloads = None
-        self.uploads = None
-        self.interests = None
-        self.userbrowse = None
-        self.userinfo = None
-        self.buddies = None
-        self.chatrooms = None
-        self.privatechat = None
-        self.pluginhandler = None
 
         config.write_configuration()
 

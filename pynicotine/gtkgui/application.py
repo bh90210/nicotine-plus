@@ -1,4 +1,4 @@
-# COPYRIGHT (C) 2020-2024 Nicotine+ Contributors
+# COPYRIGHT (C) 2020-2025 Nicotine+ Contributors
 #
 # GNU GENERAL PUBLIC LICENSE
 #    Version 3, 29 June 2007
@@ -96,6 +96,10 @@ class Application:
 
         # Show errors in the GUI from here on
         sys.excepthook = self.on_critical_error
+
+        # Always use LTR text direction for now. Once we add complete translations for a RTL
+        # language, we need to revise this.
+        Gtk.Widget.set_default_direction(Gtk.TextDirection.LTR)
 
         self._instance.connect("activate", self.on_activate)
         self._instance.connect("shutdown", self.on_shutdown)
@@ -893,7 +897,7 @@ class Application:
         from traceback import format_tb
 
         # Check if exception occurred in a plugin
-        if exc_traceback is not None and core.pluginhandler is not None:
+        if exc_traceback is not None:
             traceback = exc_traceback
 
             while traceback.tb_next:
@@ -903,8 +907,7 @@ class Application:
                     plugin_path = core.pluginhandler.get_plugin_path(plugin_name)
 
                     if file_path.startswith(plugin_path):
-                        core.pluginhandler.show_plugin_error(
-                            plugin_name, exc_type, exc_value, exc_traceback)
+                        core.pluginhandler.show_plugin_error(plugin_name, exc_value)
                         return
 
                 traceback = traceback.tb_next
@@ -930,10 +933,10 @@ class Application:
         # Log exception in terminal
         self._raise_exception(exc_value)
 
-    def on_critical_error(self, _exc_type, exc_value, _exc_traceback):
+    def on_critical_error(self, exc_type, exc_value, exc_traceback):
 
         if threading.current_thread() is threading.main_thread():
-            self._on_critical_error(_exc_type, exc_value, _exc_traceback)
+            self._on_critical_error(exc_type, exc_value, exc_traceback)
             return
 
         # Raise exception in the main thread

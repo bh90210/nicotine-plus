@@ -1,4 +1,4 @@
-# COPYRIGHT (C) 2021-2024 Nicotine+ Contributors
+# COPYRIGHT (C) 2021-2025 Nicotine+ Contributors
 #
 # GNU GENERAL PUBLIC LICENSE
 #    Version 3, 29 June 2007
@@ -44,12 +44,7 @@ class SearchTest(TestCase):
         core.init_components(enabled_components={"pluginhandler", "search", "shares"})
 
     def tearDown(self):
-
         core.quit()
-
-        self.assertIsNone(core.pluginhandler)
-        self.assertIsNone(core.search)
-        self.assertIsNone(core.shares)
 
     @classmethod
     def tearDownClass(cls):

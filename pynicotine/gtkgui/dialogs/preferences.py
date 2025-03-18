@@ -1,4 +1,4 @@
-# COPYRIGHT (C) 2020-2024 Nicotine+ Contributors
+# COPYRIGHT (C) 2020-2025 Nicotine+ Contributors
 # COPYRIGHT (C) 2016-2017 Michael Labouebe <gfarmerfr@free.fr>
 # COPYRIGHT (C) 2016 Mutnick <muhing@yahoo.com>
 # COPYRIGHT (C) 2008-2011 quinox <quinox@users.sf.net>
@@ -26,8 +26,6 @@ import os
 import re
 import sys
 import time
-
-from operator import itemgetter
 
 from gi.repository import Gdk
 from gi.repository import GObject
@@ -290,9 +288,9 @@ class DownloadsPage:
             ]
         items += [
             (_("Search"), 3),
-            (_("Abort"), 4),
+            (_("Pause"), 4),
             (_("Remove"), 5),
-            (_("Retry"), 6),
+            (_("Resume"), 6),
             (_("Browse Folder"), 7)
         ]
         self.download_double_click_combobox = ComboBox(
@@ -1737,7 +1735,7 @@ class UserInterfacePage:
 
         languages = [(_("System default"), "")]
         languages += [
-            (language_name, language_code) for language_code, language_name in sorted(LANGUAGES, key=itemgetter(1))
+            (language_name, language_code) for language_code, language_name in sorted(LANGUAGES)
         ]
 
         self.language_combobox = ComboBox(
@@ -1842,16 +1840,6 @@ class UserInterfacePage:
             "tab_changed": self.color_tab_changed_entry
         }
 
-        self.excluded_fonts = set()
-
-        if sys.platform == "darwin":
-            # Exclude broken fonts causing crashes on macOS
-            for font in (
-                ".AppleSystemUIFont",
-                "system-ui"
-            ):
-                self.excluded_fonts.add(font)
-
         self.font_buttons = {
             "globalfont": self.font_global_button,
             "listfont": self.font_list_button,
@@ -1910,7 +1898,6 @@ class UserInterfacePage:
         if (GTK_API_VERSION, GTK_MINOR_VERSION) >= (4, 10):
             color_dialog = Gtk.ColorDialog()
             font_dialog = Gtk.FontDialog()
-            font_dialog.set_filter(Gtk.CustomFilter.new(self.on_filter_font))
 
             for button in self.color_buttons.values():
                 button.set_dialog(color_dialog)
@@ -1921,9 +1908,6 @@ class UserInterfacePage:
         else:
             for button in self.color_buttons.values():
                 button.set_use_alpha(True)
-
-            for button in self.font_buttons.values():
-                button.set_filter_func(self.on_filter_font_legacy)
 
         icon_list = [
             (USER_STATUS_ICON_NAMES[UserStatus.ONLINE], _("Online"), 16, ("colored-icon", "user-status")),
@@ -2120,12 +2104,6 @@ class UserInterfacePage:
 
         return button.get_font()
 
-    def on_filter_font(self, font_face):
-        return font_face.get_family().get_name() not in self.excluded_fonts
-
-    def on_filter_font_legacy(self, font_family, _font_face):
-        return font_family.get_name() not in self.excluded_fonts
-
     def on_clear_font(self, _button, font_id):
 
         font_button = self.font_buttons[font_id]
@@ -2191,11 +2169,11 @@ class UserInterfacePage:
     # Tabs #
 
     def on_select_buddy_list_position(self, _combobox, selected_id):
+        self.tab_visible_userlist_toggle.set_active(selected_id == "tab")
 
-        buddies_tab_active = (selected_id == "tab")
-
-        self.tab_visible_userlist_toggle.set_active(buddies_tab_active)
-        self.tab_visible_userlist_toggle.set_sensitive(buddies_tab_active)
+    def on_buddy_list_tab_toggled(self, button):
+        if button.get_active():
+            self.buddy_list_position_combobox.set_selected_id("tab")
 
 
 class LoggingPage:
@@ -3518,7 +3496,8 @@ class Preferences(Dialog):
                         switch_label.add_controller(switch_label.gesture_click)
                     else:
                         switch_label.set_has_window(True)
-                        switch_label.gesture_click = Gtk.GestureMultiPress(widget=switch_label)
+                        switch_label.gesture_click = Gtk.GestureMultiPress(  # pylint: disable=c-extension-no-member
+                            widget=switch_label)
 
                     obj.set_receives_default(True)
                     switch_label.gesture_click.connect("released", self.on_toggle_label_pressed, obj)

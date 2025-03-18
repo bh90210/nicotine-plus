@@ -247,7 +247,7 @@
  - dbazza (2003–2004)
 
 ### Latvian
- - Pagal3 (2022–2024)
+ - Pagal3 (2022–2025)
 
 ### Lithuanian
  - mantas (2020)
@@ -304,11 +304,14 @@
  - mitramai (2021)
  - Markus Magnuson (alimony) (2003–2004)
 
+### Tamil
+ - தமிழ்நேரம் (2025)
+
 ### Turkish
  - Oğuz Ersen (2021–2024)
 
 ### Ukrainian
- - Oleg Gritsun (2024)
+ - Oleg Gritsun (2024–2025)
  - uniss2209 (2022)
 
 
@@ -413,6 +416,7 @@
  - Markus Magnuson
  - Mat
  - mathsped
+ - Matthaiks
  - Maxime Leroy
  - Mehavoid
  - MELERIX
@@ -488,6 +492,7 @@
  - zniavre
  - ZTetriminos
  - Žygimantas Beručka
+ - தமிழ்நேரம்
 
 
 ## License
@@ -496,7 +501,8 @@ Nicotine+ is licensed under the [GNU General Public License v3.0 or later](https
 with the following exceptions:
 
 **[tinytag](https://github.com/tinytag/tinytag) licensed under the MIT License.**  
-Copyright (c) 2014-2023 Tom Wallroth, Mat (mathiascode)
+Copyright (c) 2014-2025 Tom Wallroth, Mat (mathiascode), et al.  
+Copyright (c) 2020-2025 Nicotine+ Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
